@@ -29,3 +29,4 @@ HASH 512 for 72 byte 100 times, ms        8825    3623    6683    6822    25493
 HASH 256 for 72 byte 100 times, ms        8820    3618    6680    6818    25400
 HASH 512 for 32 byte 100 times, ms        6624    2713    5007    5113    19102
 HASH 256 for 32 byte 100 times, ms        6637    2717    5010    5118    19100
+
