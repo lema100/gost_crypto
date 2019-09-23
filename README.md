@@ -3,7 +3,7 @@ Lightweight GOST crypto GCC/STM32
 
 Part implementation of GOST crypto algorithm  
 GOST 34.11-2012 HASH 256/512 "Stribog"  
-GOST 34.12—2015 Block encryption/decryption method "Magma"  
+GOST 34.12-2015 Block encryption/decryption method "Magma"  
 GOST 34.13-2015 ECB and MIC method of "Magma"  
 
 Atolic True Studio 9.2.0  
