@@ -1,4 +1,7 @@
 #include "main.h"
+#include <stdint.h>
+#include <stdio.h>
+#include "../crypto/magma.h"
 
 const uint8_t key[] = 
 {
@@ -41,62 +44,61 @@ static void test(const uint8_t * data0, const uint8_t * data1, uint8_t len)
 		printf("TEST OK\n");
 }
 
-magma_ctx_t ctx;
+static void print_bytes(const uint8_t * data, uint8_t len)
+{
+	printf("0x");
+	for (uint8_t i = 0; i < len; i++)
+		printf("%02X", data[i]);
+	printf("\n");
+}
 
 int main(int argn, char *argc[])
 {
-	GOST_Magma_Init(&ctx, key);
+	magma_ctx_t ctx;
+	
+	Magma_Init(&ctx, key);
 	
 	printf("\nExpanded kyes\n");
 	for (uint8_t i = 0; i < 4; i++)
 	{
 		for (uint8_t j = 0; j < 8; j++)
-		{
-			uint8_t * tmp = ctx.key_iter[i * 8 + j];
-			printf("0x%02X%02X%02X%02X\n", tmp[0], tmp[1], tmp[2], tmp[3]);
-		}
+			print_bytes(ctx.key_iter[i * 8 + j], 4);
 		printf("\n");
 	}
-	printf("K1\t0x");
-	for (uint8_t j = 0; j < 8; j++)
-		printf("%02X", ctx.k1[j]);
-	printf("\nK2\t0x");
-	for (uint8_t j = 0; j < 8; j++)
-		printf("%02X", ctx.k2[j]);
-	printf("\n\n");
+	
+	printf("Additional key K1\t");
+	print_bytes(ctx.k1, 8);
+	printf("Additional key K2\t");
+	print_bytes(ctx.k2, 8);
+	printf("\n");
 
-	uint8_t out_enc[DATA_LEN], out_dec[DATA_LEN], out_mic[DATA_LEN];
 	for(uint8_t i = 0; i < 5; i++)
 	{
-		GOST_Magma_ECB_enc(&ctx, data[i], out_enc);
-		printf("Encrypted message %d\t0x", i);
-		for (uint8_t j = 0; j < 8; j++)
-			printf("%02X", out_enc[j]);
-		printf("\n");
+		Magma_ECB_enc(&ctx, data[i]);
+		printf("Encrypted message %d\t", i);
+		print_bytes(ctx.out, 8);
 
-		test(data_enc_test[i], out_enc, 8);
+		test(data_enc_test[i], ctx.out, 8);
 
-		GOST_Magma_ECB_dec(&ctx, out_enc, out_dec);
-		printf("Decrypted message %d\t0x", i);
-		for (uint8_t j = 0; j < 8; j++)
-			printf("%02X", out_dec[j]);
-		printf("\n");
+		Magma_ECB_dec(&ctx, ctx.out);
+		printf("Decrypted message %d\t", i);
+		print_bytes(ctx.out, 8);
+
+		printf("Original message %d\t", i);
+		print_bytes(data[i], 8);
 		
-		printf("Original message %d\t0x", i);
-		for (uint8_t j = 0; j < 8; j++)
-			printf("%02X", data[i][j]);
-		printf("\n");
-		
-		test(data[i], out_dec, 8);
+		test(data[i], ctx.out, 8);
 		printf("\n");
 	}
 
-	GOST_Magma_MIC(&ctx, &data[1], 4, 0, out_mic);
-	printf("MIC of message\t\t0x");
-	for (uint8_t j = 0; j < 4; j++)
-		printf("%02X", out_mic[j]);
-	printf("\n");
-	test(mic_test, out_mic, 4);
+	ctx.padded = 0;
+	ctx.blk_len = 4;
+	
+	Magma_MIC(&ctx, &data[1]);
+	printf("MIC of message\t\t");
+	print_bytes(ctx.out, 4);
+
+	test(mic_test, ctx.out, 4);
 
 	return 1;
 }
