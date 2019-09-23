@@ -1,5 +1,7 @@
-#include <string.h>
 #include "stribog.h"
+
+#include <string.h>
+#include <stdint.h>
 
 static const uint8_t iv512[64] = 
 {

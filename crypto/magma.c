@@ -1,5 +1,8 @@
 #include "magma.h"
 
+#include <string.h>
+#include <stdint.h>
+
 static const unsigned char Pi[8][16] = 
 {
 	{1, 7, 14, 13, 0, 5, 8, 3, 4, 15, 10, 6, 9, 12, 11, 2},
@@ -168,16 +171,16 @@ void Magma_ECB_dec(magma_ctx_t *ctx, const uint8_t *blk)
 	Magma_G_Fin(ctx->key_iter[0], ctx->out, ctx->out);
 }
 
-void Magma_MIC(magma_ctx_t *ctx, const uint8_t *blk[])
+void Magma_MIC(magma_ctx_t *ctx, const uint8_t *blk[], uint8_t blk_len, uint8_t padded)
 {
 	memset(ctx->out, 0x00, 8);
-	for(uint8_t i = 0; i < ctx->blk_len; i++)
+	for(uint8_t i = 0; i < blk_len; i++)
 	{
 		Magma_Xor_64(ctx->out, blk[i], ctx->out);
 		
-		if (i == ctx->blk_len - 1)
+		if (i == blk_len - 1)
 		{
-			if (ctx->padded) 
+			if (padded) 
 				Magma_Xor_64(ctx->out, ctx->k2, ctx->out);
 			else
 				Magma_Xor_64(ctx->out, ctx->k1, ctx->out);

@@ -1,6 +1,8 @@
 #include "main.h"
+
 #include <stdint.h>
 #include <stdio.h>
+
 #include "../crypto/stribog.h"
 #include "../crypto/magma.h"
 
@@ -47,39 +49,36 @@ int main(int argn, char *argc[])
 	for (uint8_t i = 0; i < 4; i++)
 	{
 		for (uint8_t j = 0; j < 8; j++)
-			print_bytes(ctx_magma.key_iter[i * 8 + j], 4);
+			print_bytes(ctx_magma.key_iter[i * 8 + j], sizeof(ctx_magma.key_iter[0]));
 		printf("\n");
 	}
 	
 	printf("Additional key K1\t");
-	print_bytes(ctx_magma.k1, 8);
+	print_bytes(ctx_magma.k1, sizeof(ctx_magma.k1));
 	printf("Additional key K2\t");
-	print_bytes(ctx_magma.k2, 8);
+	print_bytes(ctx_magma.k2, sizeof(ctx_magma.k2));
 	printf("\n");
 
 	for(uint8_t i = 0; i < 5; i++)
 	{
 		Magma_ECB_enc(&ctx_magma, data[i]);
 		printf("Encrypted message %d\t", i);
-		print_bytes(ctx_magma.out, 8);
+		print_bytes(ctx_magma.out, sizeof(ctx_magma.out));
 
-		test(data_enc_test[i], ctx_magma.out, 8);
+		test(data_enc_test[i], ctx_magma.out, sizeof(ctx_magma.out));
 
 		Magma_ECB_dec(&ctx_magma, ctx_magma.out);
 		printf("Decrypted message %d\t", i);
-		print_bytes(ctx_magma.out, 8);	
+		print_bytes(ctx_magma.out, sizeof(ctx_magma.out));
 
 		printf("Original message %d\t", i);
-		print_bytes(data[i], 8);
+		print_bytes(data[i], sizeof(ctx_magma.out));
 		
-		test(data[i], ctx_magma.out, 8);
+		test(data[i], ctx_magma.out, sizeof(ctx_magma.out));
 		printf("\n");
 	}
 
-	ctx_magma.padded = 0;
-	ctx_magma.blk_len = 4;
-	
-	Magma_MIC(&ctx_magma, &data[1]);
+	Magma_MIC(&ctx_magma, &data[1], 4, 0);
 	printf("MIC of message\t\t");
 	print_bytes(ctx_magma.out, 4);
 	test(mic_test, ctx_magma.out, 4);
@@ -109,6 +108,14 @@ int main(int argn, char *argc[])
 	printf("Message 1 H^{256}\t");
 	print_hash(&ctx_stribog);
 	test_hash(&ctx_stribog, message1_test[1]);
+
+	printf("\nRoot magma key\t\t");
+	print_bytes(ctx_magma.key_orig, sizeof(ctx_magma.key_orig));
+
+	stribog_init(&ctx_stribog, STRIBOG_HASH256);
+	stribog_calc(&ctx_stribog, key, sizeof(key));
+	printf("Root magma key H^{256}\t");
+	print_hash(&ctx_stribog);
 
 	return 1;
 }
