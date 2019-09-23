@@ -8,7 +8,7 @@ GOST 34.13-2015 ECB and MIC method of "Magma"
 
 Atolic True Studio 9.2.0  
 Performance tests  
-MCU configuration STM32L071KB tacted from HSI 16MHz  
+MCU configuration STM32L071KB (Cortex M0+) tacted from HSI 16MHz  
 
 | Magma									|	Os		|	O3		|	O2	 	|	O1		|	O0		|
 |---------------------------------------|-----------|-----------|-----------|-----------|-----------|
