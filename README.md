@@ -1,4 +1,4 @@
-# gost_crypto
+# GOST crypto
 Lightweight GOST crypto GCC/STM32
 
 Part implementation of GOST crypto algorithm  
