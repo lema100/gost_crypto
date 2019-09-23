@@ -53,10 +53,10 @@ int main(int argn, char *argc[])
 		printf("\n");
 	}
 	
-	printf("Additional key K1\t");
-	print_bytes(ctx_magma.k1, sizeof(ctx_magma.k1));
-	printf("Additional key K2\t");
-	print_bytes(ctx_magma.k2, sizeof(ctx_magma.k2));
+	printf("Additional key 1\t");
+	print_bytes(ctx_magma.key_add1, sizeof(ctx_magma.key_add1));
+	printf("Additional key 2\t");
+	print_bytes(ctx_magma.key_add2, sizeof(ctx_magma.key_add2));
 	printf("\n");
 
 	for(uint8_t i = 0; i < 5; i++)
@@ -79,12 +79,17 @@ int main(int argn, char *argc[])
 	}
 
 	Magma_MIC(&ctx_magma, &data[1], 4, 0);
-	printf("MIC of message\t\t");
+	printf("MIC of message 4 block\t");
 	print_bytes(ctx_magma.out, 4);
-	test(mic_test, ctx_magma.out, 4);
+	test(mic_test[0], ctx_magma.out, 4);
+
+	Magma_MIC(&ctx_magma, &data[1], 2, 0);
+	printf("MIC of message 2 block\t");
+	print_bytes(ctx_magma.out, 4);
+	test(mic_test[1], ctx_magma.out, 4);
 
 	printf("\n\nStribog tests\n\n");
-	
+
 	stribog_init(&ctx_stribog, STRIBOG_HASH512);
 	stribog_calc(&ctx_stribog, message0, sizeof(message0));
 	printf("Message 0 H^{512}\t");
@@ -119,12 +124,3 @@ int main(int argn, char *argc[])
 
 	return 1;
 }
-
-
-
-
-
-
-
-
-

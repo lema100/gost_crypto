@@ -4,13 +4,16 @@
 #include <stdint.h>
 
 #define MAGMA_KEY_SIZE		32
-#define MAGMA_BLOCK_SIZE	4
 #define MAGMA_BLOCK_COUNT	32
+#define MAGMA_BLOCK_SIZE	4
+#define MAGMA_ADD_KEY_SIZE	8
+#define MAGMA_DATA_SIZE		8
 
 typedef struct
 {
-	uint8_t out[8];
-	uint8_t k1[8], k2[8];
+	uint8_t out[MAGMA_DATA_SIZE];
+	uint8_t key_add1[MAGMA_ADD_KEY_SIZE];
+	uint8_t key_add2[MAGMA_ADD_KEY_SIZE];
 	uint8_t key_orig[MAGMA_KEY_SIZE];
 	uint8_t key_iter[MAGMA_BLOCK_COUNT][MAGMA_BLOCK_SIZE];
 } magma_ctx_t;

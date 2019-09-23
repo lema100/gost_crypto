@@ -41,7 +41,7 @@ static void Magma_T(const uint8_t *in_data, uint8_t *out_data)
 {
 	uint8_t first_part_byte, sec_part_byte;
 
-	for (uint8_t i = 0; i < 4; i++)
+	for (uint8_t i = 0; i < MAGMA_BLOCK_SIZE; i++)
 	{
 		first_part_byte = (in_data[i] & 0xf0) >> 4;
 		sec_part_byte = (in_data[i] & 0x0f);
@@ -53,7 +53,7 @@ static void Magma_T(const uint8_t *in_data, uint8_t *out_data)
 
 static void Magma_g(const uint8_t *k, const uint8_t *a, uint8_t *out_data)
 {
-	uint8_t internal[4];
+	uint8_t internal[MAGMA_BLOCK_SIZE];
 	uint32_t out_data_32;
 
 	Magma_Add_32(a, k, internal);
@@ -75,34 +75,34 @@ static void Magma_g(const uint8_t *k, const uint8_t *a, uint8_t *out_data)
 
 static void Magma_G(const uint8_t *k, const uint8_t *a, uint8_t *out_data)
 {
-	uint8_t a_0[4];
-	uint8_t a_1[4];
-	uint8_t G[4];
+	uint8_t a_0[MAGMA_BLOCK_SIZE];
+	uint8_t a_1[MAGMA_BLOCK_SIZE];
+	uint8_t G[MAGMA_BLOCK_SIZE];
 
-	memcpy(a_0, a + 4, 4);
-	memcpy(a_1, a, 4);
+	memcpy(a_0, a + MAGMA_BLOCK_SIZE, MAGMA_BLOCK_SIZE);
+	memcpy(a_1, a, MAGMA_BLOCK_SIZE);
 
 	Magma_g(k, a_0, G);
 	Magma_Xor_32(a_1, G, G);
 
-	memcpy(out_data, a_0, 4);
-	memcpy(out_data + 4, G, 4);
+	memcpy(out_data, a_0, MAGMA_BLOCK_SIZE);
+	memcpy(out_data + MAGMA_BLOCK_SIZE, G, MAGMA_BLOCK_SIZE);
 }
 
 static void Magma_G_Fin(const uint8_t *k, const uint8_t *a, uint8_t *out_data)
 {
-	uint8_t a_0[4];
-	uint8_t a_1[4];
-	uint8_t G[4];
+	uint8_t a_0[MAGMA_BLOCK_SIZE];
+	uint8_t a_1[MAGMA_BLOCK_SIZE];
+	uint8_t G[MAGMA_BLOCK_SIZE];
 
-	memcpy(a_0, a + 4, 4);
-	memcpy(a_1, a, 4);
+	memcpy(a_0, a + MAGMA_BLOCK_SIZE, MAGMA_BLOCK_SIZE);
+	memcpy(a_1, a, MAGMA_BLOCK_SIZE);
 
 	Magma_g(k, a_0, G);
 	Magma_Xor_32(a_1, G, G);
 
-	memcpy(out_data, G, 4);
-	memcpy(out_data + 4, a_0, 4);
+	memcpy(out_data, G, MAGMA_BLOCK_SIZE);
+	memcpy(out_data + MAGMA_BLOCK_SIZE, a_0, MAGMA_BLOCK_SIZE);
 }
 
 static void shl_64(uint8_t *data, uint8_t i)
@@ -123,13 +123,13 @@ void Magma_Init(magma_ctx_t *ctx, const uint8_t *key)
 	memcpy(ctx->key_orig, key, MAGMA_KEY_SIZE);
 
 	for(uint8_t i = 0; i < 24; i++)
-		memcpy(ctx->key_iter[i], key + i % 8 * 4, 4);
+		memcpy(ctx->key_iter[i], key + i % 8 * MAGMA_BLOCK_SIZE, MAGMA_BLOCK_SIZE);
 
 	for(uint8_t i = 0; i < 8; i++)
-		memcpy(ctx->key_iter[24 + i], key + (28 - i * 4), 4);
+		memcpy(ctx->key_iter[24 + i], key + (28 - i * MAGMA_BLOCK_SIZE), MAGMA_BLOCK_SIZE);
 
-	uint8_t data[8];
-	memset(data, 0x00, 8);
+	uint8_t data[MAGMA_DATA_SIZE];
+	memset(data, 0x00, MAGMA_DATA_SIZE);
 	Magma_ECB_enc(ctx, data);
 
 	if (ctx->out[0] & 0x80)
@@ -139,7 +139,7 @@ void Magma_Init(magma_ctx_t *ctx, const uint8_t *key)
 	}
 	else
 		shl_64(ctx->out, 1);
-	memcpy(ctx->k1, ctx->out, 8);
+	memcpy(ctx->key_add1, ctx->out, MAGMA_ADD_KEY_SIZE);
 
 	if (ctx->out[0] & 0x80)
 	{
@@ -148,13 +148,13 @@ void Magma_Init(magma_ctx_t *ctx, const uint8_t *key)
 	}
 	else
 		shl_64(ctx->out, 1);
-	memcpy(ctx->k2, ctx->out, 8);
+	memcpy(ctx->key_add2, ctx->out, MAGMA_ADD_KEY_SIZE);
 }
 
 void Magma_ECB_enc(magma_ctx_t *ctx, const uint8_t *blk)
 {
 	if (blk != ctx->out)
-		memcpy(ctx->out, blk, 8);
+		memcpy(ctx->out, blk, MAGMA_DATA_SIZE);
 
 	for(uint8_t i = 0; i < 31; i++)
 		Magma_G(ctx->key_iter[i], ctx->out, ctx->out);
@@ -164,7 +164,7 @@ void Magma_ECB_enc(magma_ctx_t *ctx, const uint8_t *blk)
 void Magma_ECB_dec(magma_ctx_t *ctx, const uint8_t *blk)
 {
 	if (blk != ctx->out)
-		memcpy(ctx->out, blk, 8);
+		memcpy(ctx->out, blk, MAGMA_DATA_SIZE);
 
 	for(uint8_t i = 31; i > 0; i--)
 		Magma_G(ctx->key_iter[i], ctx->out, ctx->out);
@@ -173,7 +173,7 @@ void Magma_ECB_dec(magma_ctx_t *ctx, const uint8_t *blk)
 
 void Magma_MIC(magma_ctx_t *ctx, const uint8_t *blk[], uint8_t blk_len, uint8_t padded)
 {
-	memset(ctx->out, 0x00, 8);
+	memset(ctx->out, 0x00, MAGMA_DATA_SIZE);
 	for(uint8_t i = 0; i < blk_len; i++)
 	{
 		Magma_Xor_64(ctx->out, blk[i], ctx->out);
@@ -181,9 +181,9 @@ void Magma_MIC(magma_ctx_t *ctx, const uint8_t *blk[], uint8_t blk_len, uint8_t 
 		if (i == blk_len - 1)
 		{
 			if (padded) 
-				Magma_Xor_64(ctx->out, ctx->k2, ctx->out);
+				Magma_Xor_64(ctx->out, ctx->key_add2, ctx->out);
 			else
-				Magma_Xor_64(ctx->out, ctx->k1, ctx->out);
+				Magma_Xor_64(ctx->out, ctx->key_add1, ctx->out);
 		}
 		Magma_ECB_enc(ctx, ctx->out);
 	}
