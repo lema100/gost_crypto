@@ -21,7 +21,7 @@ MCU configuration STM32L071KB (Cortex M0+) tacted from HSI 16MHz
 
 | Stribog								|	Os		|	O3		|	O2	 	|	O1		|	O0		|
 |---------------------------------------|-----------|-----------|-----------|-----------|-----------|  
-| ROM, byte								|	2.36k	|	5.12k	|	2.55k	|	2.43k	|	3.16k	|
+| ROM, byte								|	2.23k	|	4.98k	|	2.41k	|	2.3k	|	3.02k	|
 | RAM per ctx, byte						|	193		|	193		|	193		|	193		|	193		| 
 | HASH 512 for 63 byte 100 times, ms	|	6631	|	2720	|	5013	|	5119	|	19122	|
 | HASH 256 for 63 byte 100 times, ms	|	6618	|	2714	|	5008	|	5112	|	19000	|
