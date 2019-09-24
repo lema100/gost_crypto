@@ -1,4 +1,4 @@
-# gost_crypto
+# GOST crypto
 Lightweight GOST crypto GCC/STM32
 
 Part implementation of GOST crypto algorithm  
@@ -8,12 +8,12 @@ GOST 34.13-2015 ECB and MIC method of "Magma"
 
 Atolic True Studio 9.2.0  
 Performance tests  
-MCU configuration STM32L071KB tacted from HSI 16MHz  
+MCU configuration STM32L071KB (Cortex M0+) tacted from HSI 16MHz  
 
 | Magma									|	Os		|	O3		|	O2	 	|	O1		|	O0		|
 |---------------------------------------|-----------|-----------|-----------|-----------|-----------|
-| ROM									|	848B	|	2.36kB	|	1.27kB	|	1016B	|	2.06kB	|
-| RAM per ctx							|	184B	|	184B	|	184B	|	184B	|	184B	|
+| ROM, byte								|	848		|	2.36k	|	1.27k	|	1016	|	2.06k	|
+| RAM per ctx, byte						|	184		|	184		|	184		|	184		|	184		|
 | Encrypt 1000 blocks, ms				|	1012	|	360		|	1022	|	1011	|	2895	|
 | Decrypt 1000 blocks, ms				|	1012	|	360		|	1022	|	1011	|	2896	|
 | MIC calc for 4 blocks 1000 times, ms	|	4011	|	1408	|	4054	|	4013	|	11583	|
@@ -21,8 +21,8 @@ MCU configuration STM32L071KB tacted from HSI 16MHz
 
 | Stribog								|	Os		|	O3		|	O2	 	|	O1		|	O0		|
 |---------------------------------------|-----------|-----------|-----------|-----------|-----------|  
-| ROM									|	2.36kB	|	5.12kB	|	2.55kB	|	2.43kB	|	3.16kB  |
-| RAM per ctx							|	193B	|	193B	|	193B	|	193B	|	193B	| 
+| ROM, byte								|	2.36k	|	5.12k	|	2.55k	|	2.43k	|	3.16k	|
+| RAM per ctx, byte						|	193		|	193		|	193		|	193		|	193		| 
 | HASH 512 for 63 byte 100 times, ms	|	6631	|	2720	|	5013	|	5119	|	19122	|
 | HASH 256 for 63 byte 100 times, ms	|	6618	|	2714	|	5008	|	5112	|	19000	|
 | HASH 512 for 72 byte 100 times, ms	|	8825	|	3623	|	6683	|	6822	|	25493	|
