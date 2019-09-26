@@ -1,6 +1,11 @@
 #ifndef _MAGMA_H_
 #define _MAGMA_H_
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdint.h>
 
 #define MAGMA_KEY_SIZE		32
@@ -21,5 +26,9 @@ void Magma_Init(magma_ctx_t *ctx, const uint8_t *key);
 void Magma_ECB_enc(magma_ctx_t *ctx, const uint8_t *blk);
 void Magma_ECB_dec(magma_ctx_t *ctx, const uint8_t *blk);
 void Magma_MIC(magma_ctx_t *ctx, const uint8_t *blk[], uint8_t blk_len, uint8_t padded);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
