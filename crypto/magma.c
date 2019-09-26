@@ -120,15 +120,10 @@ static void shl_64(uint8_t *data, uint8_t i)
 
 void Magma_Init(magma_ctx_t *ctx, const uint8_t *key)
 {
+	uint8_t data[MAGMA_DATA_SIZE];
+
 	memcpy(ctx->key_orig, key, MAGMA_KEY_SIZE);
 
-	for(uint8_t i = 0; i < 24; i++)
-		memcpy(ctx->key_iter[i], key + i % 8 * MAGMA_BLOCK_SIZE, MAGMA_BLOCK_SIZE);
-
-	for(uint8_t i = 0; i < 8; i++)
-		memcpy(ctx->key_iter[24 + i], key + (28 - i * MAGMA_BLOCK_SIZE), MAGMA_BLOCK_SIZE);
-
-	uint8_t data[MAGMA_DATA_SIZE];
 	memset(data, 0x00, MAGMA_DATA_SIZE);
 	Magma_ECB_enc(ctx, data);
 
@@ -151,14 +146,22 @@ void Magma_Init(magma_ctx_t *ctx, const uint8_t *key)
 	memcpy(ctx->key_add2, ctx->out, MAGMA_ADD_KEY_SIZE);
 }
 
+static uint8_t *get_iter_key(uint8_t *key, uint8_t iter)
+{
+	if (iter < 24)
+		return key + ((iter & 0x7) << 2);
+	else
+		return key + ((7 - (iter & 0x7)) << 2);
+}
+
 void Magma_ECB_enc(magma_ctx_t *ctx, const uint8_t *blk)
 {
 	if (blk != ctx->out)
 		memcpy(ctx->out, blk, MAGMA_DATA_SIZE);
 
 	for(uint8_t i = 0; i < 31; i++)
-		G(ctx->key_iter[i], ctx->out, ctx->out);
-	G_Fin(ctx->key_iter[31], ctx->out, ctx->out);
+		G(get_iter_key(ctx->key_orig, i), ctx->out, ctx->out);
+	G_Fin(get_iter_key(ctx->key_orig, 31), ctx->out, ctx->out);
 }
 
 void Magma_ECB_dec(magma_ctx_t *ctx, const uint8_t *blk)
@@ -167,8 +170,8 @@ void Magma_ECB_dec(magma_ctx_t *ctx, const uint8_t *blk)
 		memcpy(ctx->out, blk, MAGMA_DATA_SIZE);
 
 	for(uint8_t i = 31; i > 0; i--)
-		G(ctx->key_iter[i], ctx->out, ctx->out);
-	G_Fin(ctx->key_iter[0], ctx->out, ctx->out);
+		G(get_iter_key(ctx->key_orig, i), ctx->out, ctx->out);
+	G_Fin(get_iter_key(ctx->key_orig, 0), ctx->out, ctx->out);
 }
 
 void Magma_MIC(magma_ctx_t *ctx, const uint8_t *blk[], uint8_t blk_len, uint8_t padded)

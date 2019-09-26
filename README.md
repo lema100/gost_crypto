@@ -12,12 +12,12 @@ MCU configuration STM32L071KB (Cortex M0+) tacted from HSI 16MHz
 
 | Magma									|	Os		|	O3		|	O2	 	|	O1		|	O0		|
 |---------------------------------------|-----------|-----------|-----------|-----------|-----------|
-| ROM, byte								|	848		|	2.36k	|	1.27k	|	1016	|	2.06k	|
-| RAM per ctx, byte						|	184		|	184		|	184		|	184		|	184		|
-| Encrypt 1000 blocks, ms				|	1012	|	360		|	1022	|	1011	|	2895	|
-| Decrypt 1000 blocks, ms				|	1012	|	360		|	1022	|	1011	|	2896	|
-| MIC calc for 4 blocks 1000 times, ms	|	4011	|	1408	|	4054	|	4013	|	11583	|
-| MIC calc for 2 blocks 1000 times, ms	|	2016	|	712		|	2036	|	2016	|	5810	|
+| ROM, byte								|	828		|	2.33k	|	1.3k	|	1016	|	2.01k	|
+| RAM per ctx, byte						|	56		|	56		|	56		|	56		|	56		|
+| Encrypt 1000 blocks, ms				|	1028	|	388		|	1036	|	1026	|	2976	|
+| Decrypt 1000 blocks, ms				|	1031	|	407		|	1040	|	1027	|	2976	|
+| MIC calc for 4 blocks 1000 times, ms	|	4073	|	1521	|	4111	|	4075	|	11906	|
+| MIC calc for 2 blocks 1000 times, ms	|	2046	|	769		|	2065	|	2048	|	5970	|
 
 | Stribog								|	Os		|	O3		|	O2	 	|	O1		|	O0		|
 |---------------------------------------|-----------|-----------|-----------|-----------|-----------|  

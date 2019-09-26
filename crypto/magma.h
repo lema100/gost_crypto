@@ -15,7 +15,6 @@ typedef struct
 	uint8_t key_add1[MAGMA_ADD_KEY_SIZE];
 	uint8_t key_add2[MAGMA_ADD_KEY_SIZE];
 	uint8_t key_orig[MAGMA_KEY_SIZE];
-	uint8_t key_iter[MAGMA_BLOCK_COUNT][MAGMA_BLOCK_SIZE];
 } magma_ctx_t;
 
 void Magma_Init(magma_ctx_t *ctx, const uint8_t *key);

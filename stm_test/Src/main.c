@@ -133,7 +133,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
 /*
 	Display overview
 	local_time_enc			local_time_dec			1000 times

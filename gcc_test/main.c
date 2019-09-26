@@ -45,15 +45,7 @@ int main(int argn, char *argc[])
 	Magma_Init(&ctx_magma, key);
 	
 	printf("\nMagma tests\n");
-	printf("\nExpanded kyes\n");
-	for (uint8_t i = 0; i < 4; i++)
-	{
-		for (uint8_t j = 0; j < 8; j++)
-			print_bytes(ctx_magma.key_iter[i * 8 + j], sizeof(ctx_magma.key_iter[0]));
-		printf("\n");
-	}
-	
-	printf("Additional key 1\t");
+	printf("\nAdditional key 1\t");
 	print_bytes(ctx_magma.key_add1, sizeof(ctx_magma.key_add1));
 	printf("Additional key 2\t");
 	print_bytes(ctx_magma.key_add2, sizeof(ctx_magma.key_add2));
