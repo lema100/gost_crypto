@@ -1,5 +1,6 @@
 #include "main.h"
 
+#include <string.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -113,6 +114,67 @@ int main(int argn, char *argc[])
 	stribog_calc(&ctx_stribog, key, sizeof(key));
 	printf("Root magma key H^{256}\t");
 	print_hash(&ctx_stribog);
+
+	uint8_t tmp[MAGMA_DATA_SIZE * 4];
+	uint8_t out[MAGMA_DATA_SIZE * 4];
+	memset(out, 0, MAGMA_DATA_SIZE * 4);
+	
+	for(uint8_t i = 0; i < 4; i++)
+		memcpy(&tmp[i * MAGMA_DATA_SIZE], data[1 + i], MAGMA_DATA_SIZE);
+	
+	Magma_CTR(&ctx_magma, tmp, data_ctr_iv, out, MAGMA_DATA_SIZE * 4);
+
+	printf("\nCTR encrypt");
+	printf("\ninput:\n");
+	for(uint8_t i = 0; i < 4; i++)
+		print_bytes(&tmp[i * MAGMA_DATA_SIZE], MAGMA_DATA_SIZE);
+
+	printf("\noutput:\n");
+	for(uint8_t i = 0; i < 4; i++)
+		print_bytes(&out[i * MAGMA_DATA_SIZE], MAGMA_DATA_SIZE);
+	for(uint8_t i = 0; i < 4; i++)
+		test(data_ctr_test[i + 1], &out[i * MAGMA_DATA_SIZE], MAGMA_DATA_SIZE);
+
+	memset(tmp, 0, MAGMA_DATA_SIZE * 4);
+
+	Magma_CTR(&ctx_magma, out, data_ctr_iv, tmp, MAGMA_DATA_SIZE * 4);
+
+	printf("\nCTR decrypt");
+	printf("\ninput:\n");
+	for(uint8_t i = 0; i < 4; i++)
+		print_bytes(&out[i * MAGMA_DATA_SIZE], MAGMA_DATA_SIZE);
+
+	printf("\noutput:\n");
+	for(uint8_t i = 0; i < 4; i++)
+		print_bytes(&tmp[i * MAGMA_DATA_SIZE], MAGMA_DATA_SIZE);
+	for(uint8_t i = 0; i < 4; i++)
+		test(data[i + 1], &tmp[i * MAGMA_DATA_SIZE], MAGMA_DATA_SIZE);
+
+
+	memset(out, 0, MAGMA_DATA_SIZE * 4);
+	memcpy(tmp, data[0], MAGMA_DATA_SIZE);
+	
+	Magma_CTR(&ctx_magma, tmp, data_ctr_iv, out, MAGMA_DATA_SIZE);
+
+	printf("\nCTR encrypt");
+	printf("\ninput:\n");
+	print_bytes(tmp, MAGMA_DATA_SIZE);
+
+	printf("\noutput:\n");
+	print_bytes(out, MAGMA_DATA_SIZE);
+	test(data_ctr_test[0], out, MAGMA_DATA_SIZE);
+
+	memset(tmp, 0, MAGMA_DATA_SIZE * 4);
+
+	Magma_CTR(&ctx_magma, out, data_ctr_iv, tmp, MAGMA_DATA_SIZE);
+
+	printf("\nCTR decrypt");
+	printf("\ninput:\n");
+	print_bytes(out, MAGMA_DATA_SIZE);
+
+	printf("\noutput:\n");
+	print_bytes(tmp, MAGMA_DATA_SIZE);
+	test(data[0], tmp, MAGMA_DATA_SIZE);
 
 	return 1;
 }

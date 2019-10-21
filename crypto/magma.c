@@ -37,6 +37,17 @@ static void Add_32(const uint8_t *a, const uint8_t *b, uint8_t *c)
 	}
 }
 
+static void Inc_64(uint8_t *a)
+{
+	uint16_t internal = a[7] + 1;
+	a[7] = internal & 0xff;
+	for (int8_t i = 6; i >= 0; i--)
+	{
+		internal = a[i] + (internal >> 8);
+		a[i] = internal & 0xff;
+	}
+}
+
 static void T(const uint8_t *in_data, uint8_t *out_data)
 {
 	uint8_t first_part_byte, sec_part_byte;
@@ -172,6 +183,33 @@ void Magma_ECB_dec(magma_ctx_t *ctx, const uint8_t *blk)
 	for(uint8_t i = 31; i > 0; i--)
 		G(get_iter_key(ctx->key_orig, i), ctx->out, ctx->out);
 	G_Fin(get_iter_key(ctx->key_orig, 0), ctx->out, ctx->out);
+}
+
+void Magma_CTR(magma_ctx_t *ctx, const uint8_t *blk, const uint8_t *iv, uint8_t *out, uint32_t len)
+{
+	uint32_t _len = 0, _delta = 0;
+	uint8_t tmp[MAGMA_DATA_SIZE];
+	memcpy(tmp, iv, MAGMA_DATA_SIZE);
+
+	while(len > _len)
+	{
+		_delta = len - _len;
+		Magma_ECB_enc(ctx, tmp);
+		if (_delta > MAGMA_DATA_SIZE)
+		{
+			for (uint8_t i = 0; i < 8; i++)
+				out[_len + i] = blk[_len + i] ^ ctx->out[i];
+			
+			_len += MAGMA_DATA_SIZE;
+			Inc_64(tmp);
+		}
+		else
+		{
+			for (uint8_t i = 0; i < _delta; i++)
+				out[_len + i] = blk[_len + i] ^ ctx->out[i];
+			break;
+		}
+	}
 }
 
 void Magma_MIC(magma_ctx_t *ctx, const uint8_t *blk[], uint8_t blk_len, uint8_t padded)

@@ -54,7 +54,12 @@
 magma_ctx_t ctx_magma;
 stribog_ctx_t ctx_stribog;
 
+uint8_t tmp[MAGMA_DATA_SIZE * 4];
+uint8_t out[MAGMA_DATA_SIZE * 4];
+
 uint8_t result_enc[5][MAGMA_DATA_SIZE], result_dec[5][MAGMA_DATA_SIZE];
+uint32_t local_time_ctr_enc_4, local_time_ctr_dec_4;
+uint32_t local_time_ctr_enc_1, local_time_ctr_dec_1;
 uint32_t local_time_enc, local_time_dec;
 uint32_t local_time_mic_4, local_time_mic_2;
 uint32_t local_time_hash512_63, local_time_hash256_63;
@@ -135,13 +140,68 @@ int main(void)
     /* USER CODE BEGIN 3 */
 /*
 	Display overview
+	local_time_ctr_enc_4	local_time_ctr_dec_4;	1000 times
+	local_time_ctr_enc_1	local_time_ctr_dec_1;	1000 times
 	local_time_enc			local_time_dec			1000 times
 	local_time_mic_4		local_time_mic_2		1000 times
 	local_time_hash512_63	local_time_hash256_63	100 times
 	local_time_hash512_72	local_time_hash256_72	100 times
 	local_time_hash512_32	local_time_hash256_32	100 times
 */
+	//	test ctr mode 4 blocks
+	fail = 0;
+	local_time_ctr_enc_4 = HAL_GetTick();
+	for(uint8_t i = 0; i < 4; i++)
+		memcpy(&tmp[i * MAGMA_DATA_SIZE], data[1 + i], MAGMA_DATA_SIZE);
+	for(uint16_t j = 0; j < 1000; j++)
+	{
+		memset(out, 0, MAGMA_DATA_SIZE * 4);
+		Magma_CTR(&ctx_magma, tmp, data_ctr_iv, out, MAGMA_DATA_SIZE * 4);
+		for(uint8_t i = 0; i < 4; i++)
+			fail += test(data_ctr_test[i + 1], &out[i * MAGMA_DATA_SIZE], MAGMA_DATA_SIZE);
+	}
+	local_time_ctr_enc_4 = HAL_GetTick() - local_time_ctr_enc_4;
+	local_time_ctr_dec_4 = HAL_GetTick();
 
+	for(uint16_t j = 0; j < 1000; j++)
+	{
+		memset(tmp, 0, MAGMA_DATA_SIZE * 4);
+		Magma_CTR(&ctx_magma, out, data_ctr_iv, tmp, MAGMA_DATA_SIZE * 4);
+		for(uint8_t i = 0; i < 4; i++)
+			fail += test(data[i + 1], &tmp[i * MAGMA_DATA_SIZE], MAGMA_DATA_SIZE);
+	}
+	local_time_ctr_dec_4 = HAL_GetTick() - local_time_ctr_dec_4;
+
+	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, fail ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	snprintf(tic33_buf, 10, "%ld %ld", local_time_ctr_enc_4, local_time_ctr_dec_4);
+	LCD_string_TIC33(tic33_buf);
+
+	//	test ctr mode 1 blocks
+	fail = 0;
+	local_time_ctr_enc_1 = HAL_GetTick();
+	memcpy(tmp, data[0], MAGMA_DATA_SIZE);
+	for(uint16_t j = 0; j < 1000; j++)
+	{
+		memset(out, 0, MAGMA_DATA_SIZE * 4);
+		Magma_CTR(&ctx_magma, tmp, data_ctr_iv, out, MAGMA_DATA_SIZE);
+		test(data_ctr_test[0], out, MAGMA_DATA_SIZE);
+	}
+	local_time_ctr_enc_1 = HAL_GetTick() - local_time_ctr_enc_1;
+	local_time_ctr_dec_1 = HAL_GetTick();
+
+	for(uint16_t j = 0; j < 1000; j++)
+	{
+		memset(tmp, 0, MAGMA_DATA_SIZE * 4);
+		Magma_CTR(&ctx_magma, out, data_ctr_iv, tmp, MAGMA_DATA_SIZE);
+		test(data[0], tmp, MAGMA_DATA_SIZE);
+	}
+	local_time_ctr_dec_1 = HAL_GetTick() - local_time_ctr_dec_1;
+
+	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, fail ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	snprintf(tic33_buf, 10, "%ld %ld", local_time_ctr_enc_1, local_time_ctr_dec_1);
+	LCD_string_TIC33(tic33_buf);
+
+	//	test ecb mode 1 blocks
 	fail = 0;
 	local_time_enc = HAL_GetTick();
 	for(uint16_t j = 0; j < 200; j++)
@@ -170,6 +230,7 @@ int main(void)
 	snprintf(tic33_buf, 10, "%ld %ld", local_time_enc, local_time_dec);
 	LCD_string_TIC33(tic33_buf);
 
+	//	test mic mode 4 blocks
 	fail = 0;
 	local_time_mic_4 = HAL_GetTick();
 	for(uint16_t j = 0; j < 1000; j++)
@@ -179,6 +240,7 @@ int main(void)
 	}
 	local_time_mic_4 = HAL_GetTick() - local_time_mic_4;
 
+	//	test mic mode 2 blocks
 	local_time_mic_2 = HAL_GetTick();
 	for(uint16_t j = 0; j < 1000; j++)
 	{
@@ -191,6 +253,7 @@ int main(void)
 	snprintf(tic33_buf, 10, "%ld %ld", local_time_mic_4, local_time_mic_2);
 	LCD_string_TIC33(tic33_buf);
 
+	//	test hash512 63bytes
 	fail = 0;
 	local_time_hash512_63 = HAL_GetTick();
 	for (uint8_t i = 0; i < 100; i++)
@@ -201,6 +264,7 @@ int main(void)
 	}
 	local_time_hash512_63 = HAL_GetTick() - local_time_hash512_63;
 
+	//	test hash256 63bytes
 	local_time_hash256_63 = HAL_GetTick();
 	for (uint8_t i = 0; i < 100; i++)
 	{
@@ -214,6 +278,7 @@ int main(void)
 	snprintf(tic33_buf, 10, "%ld %ld", local_time_hash512_63, local_time_hash256_63);
 	LCD_string_TIC33(tic33_buf);
 
+	//	test hash512 72bytes
 	fail = 0;
 	local_time_hash512_72 = HAL_GetTick();
 	for (uint8_t i = 0; i < 100; i++)
@@ -224,6 +289,7 @@ int main(void)
 	}
 	local_time_hash512_72 = HAL_GetTick() - local_time_hash512_72;
 
+	//	test hash256 72bytes
 	local_time_hash256_72 = HAL_GetTick();
 	for (uint8_t i = 0; i < 100; i++)
 	{
@@ -238,6 +304,7 @@ int main(void)
 	LCD_string_TIC33(tic33_buf);
 
 
+	//	test hash512 32bytes
 	local_time_hash512_32 = HAL_GetTick();
 	for (uint8_t i = 0; i < 100; i++)
 	{
@@ -246,6 +313,7 @@ int main(void)
 	}
 	local_time_hash512_32 = HAL_GetTick() - local_time_hash512_32;
 
+	//	test hash256 32bytes
 	local_time_hash256_32 = HAL_GetTick();
 	for (uint8_t i = 0; i < 100; i++)
 	{

@@ -4,7 +4,7 @@ Lightweight GOST crypto GCC/STM32
 Part implementation of GOST crypto algorithm  
 GOST 34.11-2012 HASH 256/512 "Stribog"  
 GOST 34.12-2015 Block encryption/decryption method "Magma"  
-GOST 34.13-2015 ECB and MIC method of "Magma"  
+GOST 34.13-2015 CTR, ECB and MIC method of "Magma"  
 
 Atolic True Studio 9.2.0  
 Performance tests  
@@ -12,10 +12,14 @@ MCU configuration STM32L071KB (Cortex M0+) tacted from HSI 16MHz
 
 | Magma									|	Os		|	O3		|	O2	 	|	O1		|	O0		|
 |---------------------------------------|-----------|-----------|-----------|-----------|-----------|
-| ROM, byte								|	828		|	2.33k	|	1.3k	|	1016	|	2.01k	|
+| ROM, byte								|	952		|	2.6k	|	1.47k	|	1.17k	|	2.41k	|
 | RAM per ctx, byte						|	56		|	56		|	56		|	56		|	56		|
-| Encrypt 1000 blocks, ms				|	1028	|	388		|	1036	|	1026	|	2976	|
-| Decrypt 1000 blocks, ms				|	1031	|	407		|	1040	|	1027	|	2976	|
+| CTR encrypt 4 blocks 1000 blocks, ms	|	4157	|	1588	|	4192	|	4153	|	12099	|
+| CTR decrypt 4 blocks 1000 blocks, ms	|	4157	|	1589	|	4192	|	4152	|	12099	|
+| CTR encrypt 1 blocks 1000 blocks, ms	|	1047	|	413		|	1058	|	1048	|	3022	|
+| CTR decrypt 1 blocks 1000 blocks, ms	|	1046	|	413		|	1059	|	1048	|	3022	|
+| ECB encrypt 1000 blocks, ms			|	1028	|	388		|	1036	|	1026	|	2976	|
+| ECB decrypt 1000 blocks, ms			|	1031	|	407		|	1040	|	1027	|	2976	|
 | MIC calc for 4 blocks 1000 times, ms	|	4073	|	1521	|	4111	|	4075	|	11906	|
 | MIC calc for 2 blocks 1000 times, ms	|	2046	|	769		|	2065	|	2048	|	5970	|
 
