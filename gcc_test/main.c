@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "../crypto/stribog.h"
+#include "../crypto/magma_mgm.h"
 #include "../crypto/magma.h"
 
 void test(const uint8_t * data0, const uint8_t * data1, uint8_t len)
@@ -124,12 +125,12 @@ int main(int argn, char *argc[])
 	
 	Magma_CTR(&ctx_magma, tmp, data_ctr_iv, out, MAGMA_DATA_SIZE * 4);
 
-	printf("\nCTR encrypt");
+	printf("\nCTR");
 	printf("\ninput:\n");
 	for(uint8_t i = 0; i < 4; i++)
 		print_bytes(&tmp[i * MAGMA_DATA_SIZE], MAGMA_DATA_SIZE);
 
-	printf("\noutput:\n");
+	printf("\nencrypted:\n");
 	for(uint8_t i = 0; i < 4; i++)
 		print_bytes(&out[i * MAGMA_DATA_SIZE], MAGMA_DATA_SIZE);
 	for(uint8_t i = 0; i < 4; i++)
@@ -139,12 +140,7 @@ int main(int argn, char *argc[])
 
 	Magma_CTR(&ctx_magma, out, data_ctr_iv, tmp, MAGMA_DATA_SIZE * 4);
 
-	printf("\nCTR decrypt");
-	printf("\ninput:\n");
-	for(uint8_t i = 0; i < 4; i++)
-		print_bytes(&out[i * MAGMA_DATA_SIZE], MAGMA_DATA_SIZE);
-
-	printf("\noutput:\n");
+	printf("\ndecrypted:\n");
 	for(uint8_t i = 0; i < 4; i++)
 		print_bytes(&tmp[i * MAGMA_DATA_SIZE], MAGMA_DATA_SIZE);
 	for(uint8_t i = 0; i < 4; i++)
@@ -156,11 +152,11 @@ int main(int argn, char *argc[])
 	
 	Magma_CTR(&ctx_magma, tmp, data_ctr_iv, out, MAGMA_DATA_SIZE);
 
-	printf("\nCTR encrypt");
+	printf("\nCTR");
 	printf("\ninput:\n");
 	print_bytes(tmp, MAGMA_DATA_SIZE);
 
-	printf("\noutput:\n");
+	printf("\nencrypted:\n");
 	print_bytes(out, MAGMA_DATA_SIZE);
 	test(data_ctr_test[0], out, MAGMA_DATA_SIZE);
 
@@ -168,13 +164,31 @@ int main(int argn, char *argc[])
 
 	Magma_CTR(&ctx_magma, out, data_ctr_iv, tmp, MAGMA_DATA_SIZE);
 
-	printf("\nCTR decrypt");
-	printf("\ninput:\n");
-	print_bytes(out, MAGMA_DATA_SIZE);
-
 	printf("\noutput:\n");
 	print_bytes(tmp, MAGMA_DATA_SIZE);
 	test(data[0], tmp, MAGMA_DATA_SIZE);
+
+	for (uint8_t j = 0; j < 2; j++)
+	{
+		uint8_t mgm_enc[mgm_p_size[j]], mgm_dec[mgm_p_size[j]];
+		printf("\nMGM %d", j);
+		magma_ctx_t ctx_magma_mgm;
+		Magma_Init(&ctx_magma_mgm, mgm_key[j]);
+		Magma_MGM(&ctx_magma_mgm, mgm_nonce[j], mgm_p[j], mgm_p_size[j], mgm_enc);
+		
+		printf("\ninput:\n");
+		print_bytes(mgm_p[j], mgm_p_size[j]);
+
+		printf("\nencrypted:\n");
+		print_bytes(mgm_enc, mgm_p_size[j]);
+		test(mgm_test[j], mgm_enc, mgm_p_size[j]);
+
+		Magma_MGM(&ctx_magma_mgm, mgm_nonce[j], mgm_enc, mgm_p_size[j], mgm_dec);
+
+		printf("\ndecrypted:\n");
+		print_bytes(mgm_dec, mgm_p_size[j]);
+		test(mgm_p[j], mgm_dec, mgm_p_size[j]);
+	}
 
 	return 1;
 }
