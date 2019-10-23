@@ -16,6 +16,15 @@ void Magma_MGM(
 	uint32_t len,
 	uint8_t *out);
 
+void Magma_MGM_MIC(
+	magma_ctx_t *ctx,
+	const uint8_t *nonce,
+	const uint8_t *c,
+	const uint8_t *a,
+	uint32_t len_c,
+	uint32_t len_a,
+	uint8_t *t);
+
 #ifdef __cplusplus
 }
 #endif

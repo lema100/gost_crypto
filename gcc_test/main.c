@@ -171,6 +171,7 @@ int main(int argn, char *argc[])
 	for (uint8_t j = 0; j < 2; j++)
 	{
 		uint8_t mgm_enc[mgm_p_size[j]], mgm_dec[mgm_p_size[j]];
+		uint8_t mgm_t[MAGMA_DATA_SIZE];
 		printf("\nMGM %d", j);
 		magma_ctx_t ctx_magma_mgm;
 		Magma_Init(&ctx_magma_mgm, mgm_key[j]);
@@ -188,6 +189,12 @@ int main(int argn, char *argc[])
 		printf("\ndecrypted:\n");
 		print_bytes(mgm_dec, mgm_p_size[j]);
 		test(mgm_p[j], mgm_dec, mgm_p_size[j]);
+		
+		Magma_MGM_MIC(&ctx_magma_mgm, mgm_nonce[j], mgm_test[j], mgm_a[j], mgm_p_size[j], mgm_a_size[j], mgm_t);
+		
+		printf("\nMIC:\n");
+		print_bytes(mgm_t, MAGMA_DATA_SIZE);
+		test(mgm_mic_test[j], mgm_t, MAGMA_DATA_SIZE);
 	}
 
 	return 1;
