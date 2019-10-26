@@ -54,7 +54,7 @@ uint64_t Gmul(uint64_t a, uint64_t b)
 	return p;
 }
 
-void Gmul_64(const uint8_t *a, const uint8_t *b, uint8_t *c)
+static void Gmul_64(const uint8_t *a, const uint8_t *b, uint8_t *c)
 {
 	uint8_t _a[8], _b[8];
 	
@@ -77,8 +77,7 @@ void Gmul_64(const uint8_t *a, const uint8_t *b, uint8_t *c)
 
 static void Inc_32(uint8_t *a)
 {
-	uint16_t internal = a[3] + 1;
-	a[3] = internal & 0xff;
+	uint16_t internal = 0x0100;
 	for (int8_t i = 3; i >= 0; i--)
 	{
 		internal = a[i] + (internal >> 8);
@@ -86,11 +85,11 @@ static void Inc_32(uint8_t *a)
 	}
 }
 
-void mgm_premic(magma_ctx_t *ctx, uint8_t *nonce, const uint8_t *a, uint32_t len, uint8_t *t)
+static void mgm_premic(magma_ctx_t *ctx, uint8_t *nonce, const uint8_t *a, uint32_t len, uint8_t *t)
 {
 	uint32_t _len = 0, _delta = 0;
 	uint8_t acl[MAGMA_DATA_SIZE];
-	do
+	while(len > _len)
 	{
 		_delta = len - _len;
 		Magma_ECB_enc(ctx, nonce);
@@ -112,7 +111,6 @@ void mgm_premic(magma_ctx_t *ctx, uint8_t *nonce, const uint8_t *a, uint32_t len
 			break;
 		}
 	}
-	while(len > _len);
 }
 
 static void _memcpy(uint8_t *dst, uint8_t *src, uint8_t len)
@@ -178,7 +176,6 @@ void Magma_MGM(
 		{
 			for (uint8_t i = 0; i < 8; i++)
 				out[_len + i] = blk[_len + i] ^ ctx->out[i];
-			
 			_len += MAGMA_DATA_SIZE;
 			Inc_32(&_nonce[4]);
 		}

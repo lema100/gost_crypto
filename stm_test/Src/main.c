@@ -29,6 +29,7 @@
 #include "data_sets.h"
 #include "tic33.h"
 #include "magma.h"
+#include "magma_mgm.h"
 #include "stribog.h"
 /* USER CODE END Includes */
 
@@ -51,8 +52,15 @@
 
 /* USER CODE BEGIN PV */
 
+#define MGM_MODE
+
 magma_ctx_t ctx_magma;
+magma_ctx_t ctx_magma_mgm;
 stribog_ctx_t ctx_stribog;
+
+uint8_t mgm_data[100], mgm_t[MAGMA_DATA_SIZE];
+uint32_t local_time_mgm_enc, local_time_mgm_dec;
+uint32_t local_time_mic;
 
 uint8_t tmp[MAGMA_DATA_SIZE * 4];
 uint8_t out[MAGMA_DATA_SIZE * 4];
@@ -138,6 +146,55 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+#ifdef MGM_MODE
+	fail = 0;
+	local_time_mgm_enc = HAL_GetTick();
+	for(uint16_t i = 0; i < 2; i++)
+	{
+		Magma_Init(&ctx_magma_mgm, mgm_key[i]);
+		for(uint16_t j = 0; j < 500; j++)
+		{
+			Magma_MGM(&ctx_magma_mgm, mgm_nonce[i], mgm_p[i], 9, mgm_data);
+			fail += test(mgm_test[i], mgm_data, 9);
+		}
+	}
+	local_time_mgm_enc = HAL_GetTick() - local_time_mgm_enc;
+
+	local_time_mgm_dec = HAL_GetTick();
+	for(uint16_t i = 0; i < 2; i++)
+	{
+		Magma_Init(&ctx_magma_mgm, mgm_key[i]);
+		for(uint16_t j = 0; j < 500; j++)
+		{
+			Magma_MGM(&ctx_magma_mgm, mgm_nonce[i], mgm_test[i], 9, mgm_data);
+			fail += test(mgm_p[i], mgm_data, 9);
+		}
+	}
+	local_time_mgm_dec = HAL_GetTick() - local_time_mgm_dec;
+
+	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, fail ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	snprintf(tic33_buf, 10, "%ld %ld", local_time_mgm_enc, local_time_mgm_dec);
+	LCD_string_TIC33(tic33_buf);
+
+	fail = 0;
+	local_time_mic = HAL_GetTick();
+	for(uint16_t i = 0; i < 2; i++)
+	{
+		Magma_Init(&ctx_magma_mgm, mgm_key[i]);
+		for(uint16_t j = 0; j < 500; j++)
+		{
+			Magma_MGM_MIC(&ctx_magma_mgm, mgm_nonce[i], mgm_test[i], mgm_a[i], 9, 0, mgm_t);
+			fail += test(mgm_mic_test[i], mgm_t, MAGMA_DATA_SIZE);
+		}
+	}
+	local_time_mic = HAL_GetTick() - local_time_mic;
+
+//	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, fail ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	snprintf(tic33_buf, 10, "%ld %ld", local_time_mic, 0);
+	LCD_string_TIC33(tic33_buf);
+
+#else
 /*
 	Display overview
 	local_time_ctr_enc_4	local_time_ctr_dec_4;	1000 times
@@ -324,7 +381,7 @@ int main(void)
 
 	snprintf(tic33_buf, 10, "%ld %ld", local_time_hash512_32, local_time_hash256_32);
 	LCD_string_TIC33(tic33_buf);
-
+#endif
 	HAL_Delay(1000);
   }
   /* USER CODE END 3 */
