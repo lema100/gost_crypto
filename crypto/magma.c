@@ -39,9 +39,8 @@ static void Add_32(const uint8_t *a, const uint8_t *b, uint8_t *c)
 
 static void Inc_64(uint8_t *a)
 {
-	uint16_t internal = a[7] + 1;
-	a[7] = internal & 0xff;
-	for (int8_t i = 6; i >= 0; i--)
+	uint16_t internal = 0x0100;
+	for (int8_t i = 7; i >= 0; i--)
 	{
 		internal = a[i] + (internal >> 8);
 		a[i] = internal & 0xff;

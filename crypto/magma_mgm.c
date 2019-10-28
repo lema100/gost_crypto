@@ -37,6 +37,7 @@ static void Xor_64(const uint8_t *a, const uint8_t *b, uint8_t *c)
 		c[i] = a[i] ^ b[i];
 }
 
+/*
 uint64_t Gmul(uint64_t a, uint64_t b)
 {
 	uint64_t p = 0;
@@ -48,11 +49,12 @@ uint64_t Gmul(uint64_t a, uint64_t b)
 		hi = (a & 0x8000000000000000) ? 1 : 0;
 		a <<= 1;
 		if (hi)
-			a ^= (uint64_t)0x1b;	/* x^64 + x^4 + x^3 + x + 1 */
+			a ^= (uint64_t)0x1b;	//	x^64 + x^4 + x^3 + x + 1
 		b >>= 1;
 	}
 	return p;
 }
+*/
 
 static void Gmul_64(const uint8_t *a, const uint8_t *b, uint8_t *c)
 {

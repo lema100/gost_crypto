@@ -40,10 +40,11 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Specify the memory areas */
 MEMORY
 {
-RAM (xrw)         : ORIGIN = 0x20000000, 									LENGTH = 20K
-FLASH (rx)        : ORIGIN = 0x8000000,										LENGTH = 64K
-FLASH_magma (rx)  : ORIGIN = ORIGIN(FLASH) + LENGTH(FLASH),					LENGTH = 10K
-FLASH_stribog (rx): ORIGIN = ORIGIN(FLASH_magma) + LENGTH(FLASH_magma),		LENGTH = 10K
+RAM (xrw)				: ORIGIN = 0x20000000, 											LENGTH = 20K
+FLASH (rx)				: ORIGIN = 0x8000000,											LENGTH = 64K
+FLASH_magma (rx)		: ORIGIN = ORIGIN(FLASH) + LENGTH(FLASH),						LENGTH = 10K
+FLASH_magma_mgm (rx)	: ORIGIN = ORIGIN(FLASH_magma) + LENGTH(FLASH_magma),			LENGTH = 10K
+FLASH_stribog (rx)		: ORIGIN = ORIGIN(FLASH_magma_mgm) + LENGTH(FLASH_magma_mgm),	LENGTH = 10K
 }
 
 /* Define output sections */
@@ -56,13 +57,21 @@ SECTIONS
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
   } >FLASH
-
+  
   .magma :
   {
     . = ALIGN(4);
     crypto/magma.o (.text* .rodata*)
     . = ALIGN(4);
   } >FLASH_magma
+
+  .magma_mgm :
+  {
+    . = ALIGN(4);
+    crypto/magma_mgm.o (.text* .rodata*)
+    . = ALIGN(4);
+  } >FLASH_magma_mgm
+  
   .stribog :
   {
     . = ALIGN(4);
