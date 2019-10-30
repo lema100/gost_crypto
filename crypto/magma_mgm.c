@@ -72,7 +72,7 @@ static void Gmul_64(const uint8_t *a, const uint8_t *b, uint8_t *c)
 		hi = _a[0] & 0x80;
 		shl_64(_a, 1);
 		if (hi)
-			_a[7] ^= 0x1b;	/* x^64 + x^4 + x^3 + x + 1 */
+			_a[7] ^= 0x1b;	/*		x^64 + x^4 + x^3 + x + 1		*/
 		shr_64(_b, 1);
 	}
 }

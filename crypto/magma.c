@@ -211,20 +211,39 @@ void Magma_CTR(magma_ctx_t *ctx, const uint8_t *blk, const uint8_t *iv, uint8_t 
 	}
 }
 
-void Magma_MIC(magma_ctx_t *ctx, const uint8_t *blk[], uint8_t blk_len, uint8_t padded)
+void Magma_MIC(magma_ctx_t *ctx, const uint8_t *blk, uint32_t len)
 {
+	uint32_t _len = 0, _delta = 0;
+	uint8_t padded = len & (MAGMA_DATA_SIZE - 1);
+
 	memset(ctx->out, 0x00, MAGMA_DATA_SIZE);
-	for(uint8_t i = 0; i < blk_len; i++)
+	while(len > _len)
 	{
-		Xor_64(ctx->out, blk[i], ctx->out);
-		
-		if (i == blk_len - 1)
+		_delta = len - _len;
+
+		if (_delta <= MAGMA_DATA_SIZE)
 		{
 			if (padded) 
 				Xor_64(ctx->out, ctx->key_add2, ctx->out);
 			else
 				Xor_64(ctx->out, ctx->key_add1, ctx->out);
 		}
-		Magma_ECB_enc(ctx, ctx->out);
+
+		if (_delta > MAGMA_DATA_SIZE)
+		{
+			Xor_64(ctx->out, blk + _len, ctx->out);
+			Magma_ECB_enc(ctx, ctx->out);
+			_len += MAGMA_DATA_SIZE;
+		}
+		else
+		{
+			uint8_t tmp[MAGMA_DATA_SIZE];
+			memset(tmp, 0x00, MAGMA_DATA_SIZE);
+			memcpy(tmp, blk + _len, _delta);
+			Xor_64(ctx->out, tmp, ctx->out);
+			Magma_ECB_enc(ctx, ctx->out);
+			break;
+		}
 	}
 }
+

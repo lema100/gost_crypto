@@ -26,7 +26,7 @@ void Magma_Init(magma_ctx_t *ctx, const uint8_t *key);
 void Magma_ECB_enc(magma_ctx_t *ctx, const uint8_t *blk);
 void Magma_ECB_dec(magma_ctx_t *ctx, const uint8_t *blk);
 void Magma_CTR(magma_ctx_t *ctx, const uint8_t *blk, const uint8_t *iv, uint8_t *out, uint32_t len);
-void Magma_MIC(magma_ctx_t *ctx, const uint8_t *blk[], uint8_t blk_len, uint8_t padded);
+void Magma_MIC(magma_ctx_t *ctx, const uint8_t *blk, uint32_t len);
 
 #ifdef __cplusplus
 }

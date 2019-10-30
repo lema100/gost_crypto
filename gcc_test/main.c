@@ -73,13 +73,16 @@ int main(int argn, char *argc[])
 		test(data[i], ctx_magma.out, sizeof(ctx_magma.out));
 		printf("\n");
 	}
-
-	Magma_MIC(&ctx_magma, &data[1], 4, 0);
+	
+	uint8_t data_data[MAGMA_DATA_SIZE * 4];
+	for(uint8_t i = 0; i < 4; i++)
+		memcpy(data_data + MAGMA_DATA_SIZE * i, data[i + 1], MAGMA_DATA_SIZE);
+	Magma_MIC(&ctx_magma, data_data, 32);
 	printf("MIC of message 4 block\t");
 	print_bytes(ctx_magma.out, 4);
 	test(mic_test[0], ctx_magma.out, 4);
 
-	Magma_MIC(&ctx_magma, &data[1], 2, 0);
+	Magma_MIC(&ctx_magma, data_data, 16);
 	printf("MIC of message 2 block\t");
 	print_bytes(ctx_magma.out, 4);
 	test(mic_test[1], ctx_magma.out, 4);

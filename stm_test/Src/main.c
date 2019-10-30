@@ -52,7 +52,7 @@
 
 /* USER CODE BEGIN PV */
 
-#define MGM_MODE
+//#define MGM_MODE
 
 magma_ctx_t ctx_magma;
 magma_ctx_t ctx_magma_mgm;
@@ -288,11 +288,16 @@ int main(void)
 	LCD_string_TIC33(tic33_buf);
 
 	//	test mic mode 4 blocks
+
+	uint8_t data_data[MAGMA_DATA_SIZE * 4];
+	for(uint8_t i = 0; i < 4; i++)
+		memcpy(data_data + MAGMA_DATA_SIZE * i, data[i + 1], MAGMA_DATA_SIZE);
+
 	fail = 0;
 	local_time_mic_4 = HAL_GetTick();
 	for(uint16_t j = 0; j < 1000; j++)
 	{
-		Magma_MIC(&ctx_magma, &data[1], 4, 0);
+		Magma_MIC(&ctx_magma, data_data, 32);
 		fail += test(mic_test[0], ctx_magma.out, 4);
 	}
 	local_time_mic_4 = HAL_GetTick() - local_time_mic_4;
@@ -301,7 +306,7 @@ int main(void)
 	local_time_mic_2 = HAL_GetTick();
 	for(uint16_t j = 0; j < 1000; j++)
 	{
-		Magma_MIC(&ctx_magma, &data[1], 2, 0);
+		Magma_MIC(&ctx_magma, data_data, 16);
 		fail += test(mic_test[1], ctx_magma.out, 4);
 	}
 	local_time_mic_2 = HAL_GetTick() - local_time_mic_2;
