@@ -15,23 +15,26 @@ MCU configuration STM32L071KB (Cortex M0+) tacted from HSI 16MHz
 |---------------------------------------|-----------|-----------|-----------|-----------|-----------|
 | ROM, byte								|	952		|	2.6k	|	1.47k	|	1.17k	|	2.41k	|
 | RAM per ctx, byte						|	56		|	56		|	56		|	56		|	56		|
-| CTR encrypt 4 blocks 1000 blocks, ms	|	4157	|	1588	|	4192	|	4153	|	12099	|
-| CTR decrypt 4 blocks 1000 blocks, ms	|	4157	|	1589	|	4192	|	4152	|	12099	|
-| CTR encrypt 1 blocks 1000 blocks, ms	|	1047	|	413		|	1058	|	1048	|	3022	|
-| CTR decrypt 1 blocks 1000 blocks, ms	|	1046	|	413		|	1059	|	1048	|	3022	|
-| ECB encrypt 1000 blocks, ms			|	1028	|	388		|	1036	|	1026	|	2976	|
-| ECB decrypt 1000 blocks, ms			|	1031	|	407		|	1040	|	1027	|	2976	|
+| CTR encrypt 4 blocks 1000 times, ms	|	4157	|	1588	|	4192	|	4153	|	12099	|
+| CTR decrypt 4 blocks 1000 times, ms	|	4157	|	1589	|	4192	|	4152	|	12099	|
+| CTR encrypt 1 blocks 1000 times, ms	|	1047	|	413		|	1058	|	1048	|	3022	|
+| CTR decrypt 1 blocks 1000 times, ms	|	1046	|	413		|	1059	|	1048	|	3022	|
+| ECB encrypt 1000 times, ms			|	1028	|	388		|	1036	|	1026	|	2976	|
+| ECB decrypt 1000 times, ms			|	1031	|	407		|	1040	|	1027	|	2976	|
 | MIC calc for 4 blocks 1000 times, ms	|	4073	|	1521	|	4111	|	4075	|	11906	|
 | MIC calc for 2 blocks 1000 times, ms	|	2046	|	769		|	2065	|	2048	|	5970	|
 
 | Magma MGM								|	Os		|	O3		|	O2	 	|	O1		|	O0		|
 |---------------------------------------|-----------|-----------|-----------|-----------|-----------|
 | ROM magma, byte						|	656		|	1.37k	|	1.06k	|	780		|	1.63k	|
-| ROM mgm, byte							|	780		|	1.68k	|	1.02k	|	920		|	1.88k	|
+| ROM mgm, byte							|	636		|	936		|	816		|	716		|	1.27k	|
 | RAM per ctx, byte						|	56		|	56		|	56		|	56		|	56		|
-| Encrypt 2 blocks 1000 blocks, ms		|	3074	|	1162	|	3105	|	3075	|	8929	|
-| Decrypt 2 blocks 1000 blocks, ms		|	3075	|	1161	|	3106	|	3075	|	8930	|
-| MIC 2 blocks 1000 times, ms			|	18257	|	7542	|	13116	|	13579	|	42128	|
+| Encrypt 9 bytes 1000 times, ms		|	3074	|	1162	|	3105	|	3075	|	8929	|
+| Decrypt 9 bytes 1000 times, ms		|	3075	|	1161	|	3106	|	3075	|	8930	|
+| MIC 9 bytes 1000 times, ms			|	5704	|	2443	|	5719	|	5809	|	16166	|
+| Encrypt 67 bytes 1000 times, ms		|	10227	|	3847	|	10331	|	10229	|	29845	|
+| Decrypt 67 bytes 1000 times, ms		|	10200	|	3846	|	10300	|	10200	|	29800	|
+| MIC 67 bytes + 41 bytes 1000 times, ms|	21499	|	9629	|	21505	|	22081	|	60547	|
 
 | Stribog								|	Os		|	O3		|	O2	 	|	O1		|	O0		|
 |---------------------------------------|-----------|-----------|-----------|-----------|-----------|  

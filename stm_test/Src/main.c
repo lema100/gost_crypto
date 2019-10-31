@@ -52,7 +52,7 @@
 
 /* USER CODE BEGIN PV */
 
-//#define MGM_MODE
+#define MGM_MODE
 
 magma_ctx_t ctx_magma;
 magma_ctx_t ctx_magma_mgm;
@@ -190,7 +190,7 @@ int main(void)
 	}
 	local_time_mic = HAL_GetTick() - local_time_mic;
 
-//	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, fail ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, fail ? GPIO_PIN_SET : GPIO_PIN_RESET);
 	snprintf(tic33_buf, 10, "%ld %ld", local_time_mic, 0);
 	LCD_string_TIC33(tic33_buf);
 

@@ -4,77 +4,10 @@
 #include <string.h>
 #include <stdint.h>
 
-static void shl_64(uint8_t *data, uint8_t i)
+static void _memcpy(uint8_t *dst, const uint8_t *src, uint8_t len)
 {
-	uint64_t tmp = data[0];
-
-	for (uint8_t i = 1; i < 8; i++)
-		tmp = (tmp << 8) + data[i];
-	
-	tmp <<= i;
-	
-	for (uint8_t i = 0; i < 8; i++)
-		data[i] = tmp >> (56 - i * 8);
-}
-
-
-static void shr_64(uint8_t *data, uint8_t i)
-{
-	uint64_t tmp = data[0];
-
-	for (uint8_t i = 1; i < 8; i++)
-		tmp = (tmp << 8) + data[i];
-	
-	tmp >>= i;
-	
-	for (uint8_t i = 0; i < 8; i++)
-		data[i] = tmp >> (56 - i * 8);
-}
-
-static void Xor_64(const uint8_t *a, const uint8_t *b, uint8_t *c)
-{
-	for (uint8_t i = 0; i < 8; i++)
-		c[i] = a[i] ^ b[i];
-}
-
-/*
-uint64_t Gmul(uint64_t a, uint64_t b)
-{
-	uint64_t p = 0;
-	uint8_t hi;
-	for (uint8_t i = 0; i < 64; i++)
-	{
-		if (b & (uint64_t)0x01)
-			p ^= a;
-		hi = (a & 0x8000000000000000) ? 1 : 0;
-		a <<= 1;
-		if (hi)
-			a ^= (uint64_t)0x1b;	//	x^64 + x^4 + x^3 + x + 1
-		b >>= 1;
-	}
-	return p;
-}
-*/
-
-static void Gmul_64(const uint8_t *a, const uint8_t *b, uint8_t *c)
-{
-	uint8_t _a[8], _b[8];
-	
-	memcpy(_a, a, 8);
-	memcpy(_b, b, 8);
-	memset(c, 0x00, 8);
-	
-	uint8_t hi;
-	for (uint8_t i = 0; i < 64; i++)
-	{
-		if (_b[7] & 0x01)
-			Xor_64(c, _a, c);
-		hi = _a[0] & 0x80;
-		shl_64(_a, 1);
-		if (hi)
-			_a[7] ^= 0x1b;	/*		x^64 + x^4 + x^3 + x + 1		*/
-		shr_64(_b, 1);
-	}
+	for (uint8_t i = 0; i < len; i++)
+		dst[i] = src[len - i - 1];
 }
 
 static void Inc_32(uint8_t *a)
@@ -87,38 +20,57 @@ static void Inc_32(uint8_t *a)
 	}
 }
 
+static void Gmul_64(const uint8_t *a, const uint8_t *b, uint8_t *c)
+{
+	uint64_t _a64, _b64, _c64 = 0;
+	uint8_t *_a = (uint8_t *)&_a64;
+	uint8_t *_b = (uint8_t *)&_b64;
+	uint8_t *_c = (uint8_t *)&_c64;
+	
+	_memcpy(_a, a, 8);
+	_memcpy(_b, b, 8);
+	
+	uint8_t hi;
+	for (uint8_t i = 0; i < 64; i++)
+	{
+		if (_b[0] & 0x01)
+			_c64 ^= _a64;
+		hi = _a[7] & 0x80;
+		_a64 <<= 1;
+		if (hi)
+			_a[0] ^= 0x1b;	//	x^64 + x^4 + x^3 + x + 1
+		_b64 >>= 1;
+	 }
+	_memcpy(c, _c, 8);
+}
+
 static void mgm_premic(magma_ctx_t *ctx, uint8_t *nonce, const uint8_t *a, uint32_t len, uint8_t *t)
 {
 	uint32_t _len = 0, _delta = 0;
-	uint8_t acl[MAGMA_DATA_SIZE];
+	uint64_t _acl64;
+	uint8_t *_acl = (uint8_t *)&_acl64;
 	while(len > _len)
 	{
 		_delta = len - _len;
 		Magma_ECB_enc(ctx, nonce);
 		if (_delta > MAGMA_DATA_SIZE)
 		{
-			Gmul_64(ctx->out, a + _len, acl);
+			Gmul_64(ctx->out, a + _len, _acl);
 			_len += MAGMA_DATA_SIZE;
 			Inc_32(&nonce[0]);
-			Xor_64(t, acl, t);
+			*(uint64_t *)t ^= _acl64;
 		}
 		else
 		{
 			uint8_t tmp[MAGMA_DATA_SIZE];
 			memset(tmp, 0x00, MAGMA_DATA_SIZE);
 			memcpy(tmp, a + _len, _delta);
-			Gmul_64(ctx->out, tmp, acl);
+			Gmul_64(ctx->out, tmp, _acl);
 			Inc_32(&nonce[0]);
-			Xor_64(t, acl, t);
+			*(uint64_t *)t ^= _acl64;
 			break;
 		}
 	}
-}
-
-static void _memcpy(uint8_t *dst, uint8_t *src, uint8_t len)
-{
-	for (uint8_t i = 0; i < len; i++)
-		dst[i] = src[len - i - 1];
 }
 
 void Magma_MGM_MIC(
@@ -130,27 +82,28 @@ void Magma_MGM_MIC(
 	uint32_t len_a,
 	uint8_t *t)
 {
-	uint8_t _nonce[MAGMA_DATA_SIZE];
+	uint64_t _len64, _nonce64, _t64 = 0;
+	uint8_t *_len = (uint8_t *)&_len64;
+	uint8_t *_t = (uint8_t *)&_t64;
+	uint8_t *_nonce = (uint8_t *)&_nonce64;
 	
 	memcpy(_nonce, nonce, MAGMA_DATA_SIZE);
 	_nonce[0] |= 0x80;
 	Magma_ECB_enc(ctx, _nonce);
 	memcpy(_nonce, ctx->out, MAGMA_DATA_SIZE);
 
-	memset(t, 0x00, MAGMA_DATA_SIZE);
-	mgm_premic(ctx, _nonce, a, len_a, t);
-	mgm_premic(ctx, _nonce, c, len_c, t);
+	mgm_premic(ctx, _nonce, a, len_a, _t);
+	mgm_premic(ctx, _nonce, c, len_c, _t);
 
-	uint8_t tmp[MAGMA_DATA_SIZE];
 	len_c *= 8;
 	len_a *= 8;
-	_memcpy(&tmp[0], (uint8_t *)&len_a, 4);
-	_memcpy(&tmp[4], (uint8_t *)&len_c, 4);
+	_memcpy(&_len[0], (uint8_t *)&len_a, 4);
+	_memcpy(&_len[4], (uint8_t *)&len_c, 4);
 
 	Magma_ECB_enc(ctx, _nonce);
-	Gmul_64(ctx->out, tmp, tmp);
-	Xor_64(t, tmp, t);
-	Magma_ECB_enc(ctx, t);
+	Gmul_64(ctx->out, _len, _len);
+	_t64 ^= _len64;
+	Magma_ECB_enc(ctx, _t);
 	
 	memcpy(t, ctx->out, MAGMA_DATA_SIZE);
 }
