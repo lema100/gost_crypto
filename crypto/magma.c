@@ -247,3 +247,12 @@ void Magma_MIC(magma_ctx_t *ctx, const uint8_t *blk, uint32_t len)
 	}
 }
 
+void Magma_KEY_mesh(magma_ctx_t *parent, magma_ctx_t *child, uint8_t iv_base)
+{
+	uint8_t blk[MAGMA_KEY_SIZE], out[MAGMA_KEY_SIZE], iv[MAGMA_DATA_SIZE];
+	memset(blk, 0x00, MAGMA_KEY_SIZE);
+	memset(iv, iv_base, MAGMA_DATA_SIZE);
+
+	Magma_CTR(parent, blk, iv, out, MAGMA_KEY_SIZE);
+	Magma_Init(child, out);	
+}
