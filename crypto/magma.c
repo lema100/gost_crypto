@@ -128,6 +128,14 @@ static void shl_64(uint8_t *data, uint8_t i)
 		data[i] = tmp >> (56 - i * 8);
 }
 
+void Magma_CP(magma_ctx_t *ctx_dst, magma_ctx_t *ctx_src)
+{
+	memcpy(ctx_dst->key_add1, ctx_src->key_add1, MAGMA_ADD_KEY_SIZE);
+	memcpy(ctx_dst->key_add2, ctx_src->key_add2, MAGMA_ADD_KEY_SIZE);
+	memcpy(ctx_dst->key_orig, ctx_src->key_orig, MAGMA_KEY_SIZE);
+	memcpy(ctx_dst->out, ctx_src->out, MAGMA_DATA_SIZE);
+}
+
 void Magma_Init(magma_ctx_t *ctx, const uint8_t *key)
 {
 	uint8_t data[MAGMA_DATA_SIZE];
