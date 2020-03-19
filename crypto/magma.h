@@ -27,6 +27,8 @@ void Magma_ECB_enc(magma_ctx_t *ctx, const uint8_t *blk);
 void Magma_ECB_dec(magma_ctx_t *ctx, const uint8_t *blk);
 void Magma_CTR(magma_ctx_t *ctx, const uint8_t *blk, const uint8_t *iv, uint8_t *out, uint32_t len);
 void Magma_MIC(magma_ctx_t *ctx, const uint8_t *blk, uint32_t len);
+void Magma_KEY_mesh(magma_ctx_t *parent, magma_ctx_t *child, uint8_t iv_base);
+void Magma_CP(magma_ctx_t *ctx_dst, magma_ctx_t *ctx_src);
 
 #ifdef __cplusplus
 }
